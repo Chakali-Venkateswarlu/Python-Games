@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Guess Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .hint {
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .letter-box {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            display: inline-block;
+            border: 2px solid #000;
+            text-align: center;
+            font-size: 24px;
+            line-height: 40px;
+        }
+        .letter-box.filled {
+            background-color: #d3ffd3;
+        }
+        .input-container {
+            margin: 20px 0;
+        }
+        .space-box {
+    background-color: #f5f506; /* Light gray color for spaces */
+}
+
+        .input-container input {
+            padding: 10px;
+            font-size: 18px;
+            width: 300px;
+        }
+        .input-container button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Word Guess Game</h1>
+    <div id="game">
+        <div id="hint" class="hint">Loading...</div>
+        <div id="word"></div>
+        <div class="input-container">
+            <input type="text" id="guess" placeholder="Enter your guess here">
+            <button onclick="submitGuess()">Submit</button>
+            <button onclick="requestHint()">Get Hint</button>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        let word = "";
+        let hint = "";
+        let revealed = [];
+
+        // Fetch a new word and initialize the game
+        async function fetchWord() {
+            const response = await fetch('/get_word');
+            const data = await response.json();
+            word = data.word;
+            hint = data.hint;
+            revealed = Array(word.length).fill(false);
+            displayWord();
+            document.getElementById('hint').innerText = `Hint: ${hint}`;
+        }
+
+        // Display the word with revealed letters
+        function displayWord() {
+            const wordContainer = document.getElementById('word');
+            wordContainer.innerHTML = '';
+
+            for (let i = 0; i < word.length; i++) {
+                const box = document.createElement('div');
+                box.className = 'letter-box';
+                if (revealed[i] || word[i] === ' ') {
+                    box.classList.add('filled');
+                    box.innerText = word[i];
+                }
+                wordContainer.appendChild(box);
+            }
+        }
+
+        // Submit a guess
+        async function submitGuess() {
+            const guessInput = document.getElementById('guess');
+            const guess = guessInput.value;
+            guessInput.value = '';
+
+            const response = await fetch('/submit_guess', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ guess })
+            });
+
+            const data = await response.json();
+            if (data.correct) {
+                document.getElementById('message').innerText = 'Correct! You guessed the word!';
+                revealed = Array(word.length).fill(true);
+            } else {
+                if (data.reveal.length) {
+                    const [index, letter] = data.reveal;
+                    revealed[index] = true;
+                }
+                if (data.hint) {
+                    document.getElementById('hint').innerText = `Hint: ${data.hint}`;
+                }
+                document.getElementById('message').innerText = 'Incorrect guess. Try again!';
+            }
+
+            displayWord();
+        }
+
+        // Request an additional hint
+        async function requestHint() {
+            const response = await fetch('/submit_guess', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ request_hint: true })
+            });
+
+            const data = await response.json();
+            if (data.hint) {
+                document.getElementById('hint').innerText = `Hint: ${data.hint}`;
+            }
+
+            if (data.reveal.length) {
+                const [index, letter] = data.reveal;
+                revealed[index] = true;
+            }
+
+            displayWord();
+        }
+
+        // Initialize the game on load
+        window.onload = fetchWord;
+        // Display the word with revealed letters
+function displayWord() {
+    const wordContainer = document.getElementById('word');
+    wordContainer.innerHTML = '';
+
+    for (let i = 0; i < word.length; i++) {
+        const box = document.createElement('div');
+        box.className = 'letter-box';
+
+        if (word[i] === ' ') {
+            box.classList.add('space-box');
+            box.innerText = ' ';  // Display a space in the box
+        } else if (revealed[i]) {
+            box.classList.add('filled');
+            box.innerText = word[i];
+        }
+
+        wordContainer.appendChild(box);
+    }
+}
+
+    </script>
+</body>
+</html>
