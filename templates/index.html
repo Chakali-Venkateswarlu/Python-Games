@@ -9,11 +9,16 @@
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
+            background-color: #f0f0f0; /* Light gray background */
+            background-image: url('background.jpg'); /* Replace with your background image path */
+            background-size: cover; /* Ensure the background covers the entire screen */
+            background-position: center; /* Center the background image */
         }
         .hint {
             margin: 10px 0;
             font-size: 18px;
             font-weight: bold;
+            color: #333; /* Darker color for hint text */
         }
         .letter-box {
             width: 40px;
@@ -24,26 +29,50 @@
             text-align: center;
             font-size: 24px;
             line-height: 40px;
+            background-color: #fff; /* White background for letter boxes */
+            cursor: pointer; /* Pointer cursor for interactive elements */
+            transition: background-color 0.3s ease; /* Smooth transition for hover effects */
         }
         .letter-box.filled {
-            background-color: #d3ffd3;
+            background-color: #d3ffd3; /* Light green for filled letters */
+        }
+        .space-box {
+            background-color: #f5f506; /* Light gray color for spaces */
         }
         .input-container {
             margin: 20px 0;
         }
-        .space-box {
-    background-color: #f5f506; /* Light gray color for spaces */
-}
-
         .input-container input {
             padding: 10px;
             font-size: 18px;
             width: 300px;
+            border: 2px solid #999; /* Light border for input */
+            border-radius: 5px; /* Rounded corners for input */
+            transition: border-color 0.3s ease; /* Smooth transition for input focus */
+        }
+        .input-container input:focus {
+            outline: none; /* Remove default focus outline */
+            border-color: #555; /* Darker border color on focus */
         }
         .input-container button {
             padding: 10px 20px;
             font-size: 18px;
             margin-left: 10px;
+            background-color: #007bff; /* Blue button background */
+            color: #fff; /* White text color */
+            border: none;
+            border-radius: 5px; /* Rounded corners for buttons */
+            cursor: pointer;
+            transition: background-color 0.3s ease; /* Smooth transition for hover effects */
+        }
+        .input-container button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333; /* Darker color for message text */
         }
     </style>
 </head>
@@ -84,10 +113,19 @@
             for (let i = 0; i < word.length; i++) {
                 const box = document.createElement('div');
                 box.className = 'letter-box';
-                if (revealed[i] || word[i] === ' ') {
+                if (word[i] === ' ') {
+                    box.classList.add('space-box');
+                    box.innerText = ' ';  // Display a space in the box
+                } else if (revealed[i]) {
                     box.classList.add('filled');
                     box.innerText = word[i];
                 }
+                box.addEventListener('click', () => {
+                    if (!revealed[i]) {
+                        revealed[i] = true;
+                        displayWord();
+                    }
+                });
                 wordContainer.appendChild(box);
             }
         }
@@ -145,27 +183,6 @@
 
         // Initialize the game on load
         window.onload = fetchWord;
-        // Display the word with revealed letters
-function displayWord() {
-    const wordContainer = document.getElementById('word');
-    wordContainer.innerHTML = '';
-
-    for (let i = 0; i < word.length; i++) {
-        const box = document.createElement('div');
-        box.className = 'letter-box';
-
-        if (word[i] === ' ') {
-            box.classList.add('space-box');
-            box.innerText = ' ';  // Display a space in the box
-        } else if (revealed[i]) {
-            box.classList.add('filled');
-            box.innerText = word[i];
-        }
-
-        wordContainer.appendChild(box);
-    }
-}
-
     </script>
 </body>
 </html>
